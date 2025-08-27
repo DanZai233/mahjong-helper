@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"github.com/EndlessCheng/mahjong-helper/util/model"
+	"strings"
 )
 
 func interact(humanTilesInfo *model.HumanTilesInfo) error {
@@ -23,6 +24,9 @@ func interact(humanTilesInfo *model.HumanTilesInfo) error {
 	tiles34 := playerInfo.HandTiles34
 	leftTiles34 := playerInfo.LeftTiles34
 	var tile string
+	
+	fmt.Println("💡 输入 'help' 查看帮助，'auto-help' 查看自动出牌帮助")
+	
 	for {
 		count := util.CountOfTiles34(tiles34)
 		switch count % 3 {
@@ -31,6 +35,12 @@ func interact(humanTilesInfo *model.HumanTilesInfo) error {
 		case 1:
 			fmt.Print("> 摸 ")
 			fmt.Scanf("%s\n", &tile)
+			
+			// 处理特殊命令
+			if handleSpecialCommands(tile) {
+				continue
+			}
+			
 			tile, isRedFive, err := util.StrToTile34(tile)
 			if err != nil {
 				// 让用户重新输入
@@ -50,6 +60,12 @@ func interact(humanTilesInfo *model.HumanTilesInfo) error {
 		case 2:
 			fmt.Print("> 切 ")
 			fmt.Scanf("%s\n", &tile)
+			
+			// 处理特殊命令
+			if handleSpecialCommands(tile) {
+				continue
+			}
+			
 			tile, isRedFive, err := util.StrToTile34(tile)
 			if err != nil {
 				// 让用户重新输入
@@ -71,4 +87,37 @@ func interact(humanTilesInfo *model.HumanTilesInfo) error {
 			fmt.Fprintln(os.Stderr, err)
 		}
 	}
+}
+
+// 处理特殊命令
+func handleSpecialCommands(input string) bool {
+	input = strings.TrimSpace(input)
+	
+	switch input {
+	case "help":
+		fmt.Println("💡 可用命令:")
+		fmt.Println("  help         - 显示此帮助")
+		fmt.Println("  auto-help    - 显示自动出牌帮助")
+		fmt.Println("  quit/exit    - 退出交互模式")
+		fmt.Println("  牌名         - 输入牌名进行摸牌或切牌")
+		fmt.Println("               例如: 1m, 2p, 3s, 1z")
+		fmt.Println()
+		return true
+		
+	case "auto-help":
+		printAutoPlayerHelp()
+		return true
+		
+	case "quit", "exit":
+		fmt.Println("👋 退出交互模式")
+		os.Exit(0)
+		return true
+	}
+	
+	// 处理自动出牌命令
+	if strings.HasPrefix(input, "auto-") {
+		return handleAutoPlayerCommand(input)
+	}
+	
+	return false
 }

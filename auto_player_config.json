@@ -1,0 +1,24 @@
+{
+  "enabled": false,
+  "autoDiscard": true,
+  "autoMeld": false,
+  "autoRiichi": false,
+  "autoAgari": true,
+  "minConfidence": 0.7,
+  "defenseThreshold": 0.15,
+  "delaySeconds": 1.0,
+  "confirmActions": true,
+  "strategy": "balanced",
+  "description": {
+    "enabled": "是否启用自动出牌",
+    "autoDiscard": "自动切牌",
+    "autoMeld": "自动鸣牌",
+    "autoRiichi": "自动立直",
+    "autoAgari": "自动和牌",
+    "minConfidence": "最小置信度阈值 (0.0-1.0)",
+    "defenseThreshold": "防守阈值，超过此值会优先防守 (0.0-1.0)",
+    "delaySeconds": "操作延迟秒数",
+    "confirmActions": "是否需要确认操作",
+    "strategy": "策略类型: aggressive(激进)/balanced(平衡)/defensive(防守)"
+  }
+}

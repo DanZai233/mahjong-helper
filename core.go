@@ -768,7 +768,19 @@ func (d *roundData) analysis() error {
 
 		// 打印何切推荐
 		// TODO: 根据是否听牌/一向听、打点、巡目、和率等进行攻守判断
-		return analysisPlayerWithRisk(playerInfo, mixedRiskTable)
+		err := analysisPlayerWithRisk(playerInfo, mixedRiskTable)
+		
+		// 自动出牌处理
+		if err == nil {
+			decision := globalAutoPlayer.MakeDecision(playerInfo, mixedRiskTable, -1, false)
+			if decision.Action != "pass" {
+				if autoErr := globalAutoPlayer.ExecuteDecision(decision); autoErr != nil {
+					fmt.Printf("自动出牌执行失败: %v\n", autoErr)
+				}
+			}
+		}
+		
+		return err
 	case d.parser.IsDiscard():
 		who, discardTile, isRedFive, isTsumogiri, isReach, canBeMeld, kanDoraIndicator := d.parser.ParseDiscard()
 
@@ -905,7 +917,19 @@ func (d *roundData) analysis() error {
 		// 为了方便解析牌谱，这里尽可能地解析副露
 		// TODO: 提醒: 消除海底/避免河底
 		allowChi := d.playerNumber != 3 && who == 3 && playerInfo.LeftDrawTilesCount > 0
-		return analysisMeld(playerInfo, discardTile, isRedFive, allowChi, mixedRiskTable)
+		err := analysisMeld(playerInfo, discardTile, isRedFive, allowChi, mixedRiskTable)
+		
+		// 自动鸣牌处理
+		if err == nil {
+			decision := globalAutoPlayer.MakeDecision(playerInfo, mixedRiskTable, discardTile, canBeMeld)
+			if decision.Action != "pass" {
+				if autoErr := globalAutoPlayer.ExecuteDecision(decision); autoErr != nil {
+					fmt.Printf("自动鸣牌执行失败: %v\n", autoErr)
+				}
+			}
+		}
+		
+		return err
 	case d.parser.IsRoundWin():
 		// TODO: 解析天凤牌谱 - 注意 skipOutput
 

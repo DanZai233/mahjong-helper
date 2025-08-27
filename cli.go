@@ -708,3 +708,189 @@ func printResults14WithRisk(results14 util.Hand14AnalysisResultList, mixedRiskTa
 		r.printWaitsWithImproves13_oneRow()
 	}
 }
+
+// 自动出牌相关命令处理函数
+
+// 显示自动出牌帮助信息
+func printAutoPlayerHelp() {
+	fmt.Println("🤖 自动出牌命令:")
+	fmt.Println("  auto-on          - 启用自动出牌")
+	fmt.Println("  auto-off         - 禁用自动出牌")
+	fmt.Println("  auto-toggle      - 切换自动出牌状态")
+	fmt.Println("  auto-config      - 显示当前配置")
+	fmt.Println("  auto-reset       - 重置为默认配置")
+	fmt.Println("  auto-strategy X  - 设置策略 (aggressive/balanced/defensive)")
+	fmt.Println("  auto-delay X     - 设置延迟秒数")
+	fmt.Println("  auto-threshold X - 设置防守阈值 (0.0-1.0)")
+	fmt.Println("  auto-confidence X- 设置最小置信度 (0.0-1.0)")
+	fmt.Println("  auto-confirm on  - 启用操作确认")
+	fmt.Println("  auto-confirm off - 禁用操作确认")
+	fmt.Println()
+}
+
+// 处理自动出牌命令
+func handleAutoPlayerCommand(cmd string) bool {
+	parts := strings.Fields(cmd)
+	if len(parts) == 0 {
+		return false
+	}
+	
+	switch parts[0] {
+	case "auto-on":
+		SetAutoPlayerEnabled(true)
+		return true
+		
+	case "auto-off":
+		SetAutoPlayerEnabled(false)
+		return true
+		
+	case "auto-toggle":
+		ToggleAutoPlayer()
+		return true
+		
+	case "auto-config":
+		ShowAutoPlayerConfig()
+		return true
+		
+	case "auto-reset":
+		if err := ResetAutoPlayerConfig(); err != nil {
+			fmt.Printf("重置配置失败: %v\n", err)
+		} else {
+			fmt.Println("✅ 配置已重置为默认值")
+		}
+		return true
+		
+	case "auto-strategy":
+		if len(parts) < 2 {
+			fmt.Println("❌ 请指定策略: aggressive/balanced/defensive")
+			return true
+		}
+		strategy := parts[1]
+		validStrategies := []string{"aggressive", "balanced", "defensive"}
+		valid := false
+		for _, s := range validStrategies {
+			if strategy == s {
+				valid = true
+				break
+			}
+		}
+		if !valid {
+			fmt.Printf("❌ 无效策略: %s，有效策略: %v\n", strategy, validStrategies)
+			return true
+		}
+		
+		config := GetAutoPlayerConfig()
+		config.Strategy = strategy
+		SetAutoPlayerConfig(config)
+		if err := SaveAutoPlayerConfig(); err != nil {
+			fmt.Printf("保存配置失败: %v\n", err)
+		} else {
+			fmt.Printf("✅ 策略已设置为: %s\n", strategy)
+		}
+		return true
+		
+	case "auto-delay":
+		if len(parts) < 2 {
+			fmt.Println("❌ 请指定延迟秒数")
+			return true
+		}
+		var delay float64
+		if _, err := fmt.Sscanf(parts[1], "%f", &delay); err != nil {
+			fmt.Printf("❌ 无效延迟值: %s\n", parts[1])
+			return true
+		}
+		if delay < 0.0 || delay > 10.0 {
+			fmt.Println("❌ 延迟必须在 0.0 到 10.0 秒之间")
+			return true
+		}
+		
+		config := GetAutoPlayerConfig()
+		config.DelaySeconds = delay
+		SetAutoPlayerConfig(config)
+		if err := SaveAutoPlayerConfig(); err != nil {
+			fmt.Printf("保存配置失败: %v\n", err)
+		} else {
+			fmt.Printf("✅ 延迟已设置为: %.1f秒\n", delay)
+		}
+		return true
+		
+	case "auto-threshold":
+		if len(parts) < 2 {
+			fmt.Println("❌ 请指定防守阈值")
+			return true
+		}
+		var threshold float64
+		if _, err := fmt.Sscanf(parts[1], "%f", &threshold); err != nil {
+			fmt.Printf("❌ 无效阈值: %s\n", parts[1])
+			return true
+		}
+		if threshold < 0.0 || threshold > 1.0 {
+			fmt.Println("❌ 阈值必须在 0.0 到 1.0 之间")
+			return true
+		}
+		
+		config := GetAutoPlayerConfig()
+		config.DefenseThreshold = threshold
+		SetAutoPlayerConfig(config)
+		if err := SaveAutoPlayerConfig(); err != nil {
+			fmt.Printf("保存配置失败: %v\n", err)
+		} else {
+			fmt.Printf("✅ 防守阈值已设置为: %.2f\n", threshold)
+		}
+		return true
+		
+	case "auto-confidence":
+		if len(parts) < 2 {
+			fmt.Println("❌ 请指定最小置信度")
+			return true
+		}
+		var confidence float64
+		if _, err := fmt.Sscanf(parts[1], "%f", &confidence); err != nil {
+			fmt.Printf("❌ 无效置信度: %s\n", parts[1])
+			return true
+		}
+		if confidence < 0.0 || confidence > 1.0 {
+			fmt.Println("❌ 置信度必须在 0.0 到 1.0 之间")
+			return true
+		}
+		
+		config := GetAutoPlayerConfig()
+		config.MinConfidence = confidence
+		SetAutoPlayerConfig(config)
+		if err := SaveAutoPlayerConfig(); err != nil {
+			fmt.Printf("保存配置失败: %v\n", err)
+		} else {
+			fmt.Printf("✅ 最小置信度已设置为: %.2f\n", confidence)
+		}
+		return true
+		
+	case "auto-confirm":
+		if len(parts) < 2 {
+			fmt.Println("❌ 请指定: on 或 off")
+			return true
+		}
+		
+		var confirm bool
+		switch parts[1] {
+		case "on":
+			confirm = true
+		case "off":
+			confirm = false
+		default:
+			fmt.Printf("❌ 无效选项: %s，请使用 on 或 off\n", parts[1])
+			return true
+		}
+		
+		config := GetAutoPlayerConfig()
+		config.ConfirmActions = confirm
+		SetAutoPlayerConfig(config)
+		if err := SaveAutoPlayerConfig(); err != nil {
+			fmt.Printf("保存配置失败: %v\n", err)
+		} else {
+			fmt.Printf("✅ 操作确认已%s\n", map[bool]string{true: "启用", false: "禁用"}[confirm])
+		}
+		return true
+	}
+	
+	return false
+}

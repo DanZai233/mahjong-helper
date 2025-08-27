@@ -27,6 +27,10 @@ var (
 	humanDoraTiles string
 
 	port int
+	
+	// 自动出牌相关参数
+	autoPlayerEnabled bool
+	autoPlayerConfig  string
 )
 
 func init() {
@@ -49,6 +53,10 @@ func init() {
 	flag.StringVar(&humanDoraTiles, "d", "", "同 -dora")
 	flag.IntVar(&port, "port", 12121, "指定服务端口")
 	flag.IntVar(&port, "p", 12121, "同 -port")
+	
+	// 自动出牌参数
+	flag.BoolVar(&autoPlayerEnabled, "auto", false, "启用自动出牌")
+	flag.StringVar(&autoPlayerConfig, "auto-config", "balanced", "自动出牌策略 (aggressive/balanced/defensive)")
 }
 
 const (
@@ -130,6 +138,21 @@ func main() {
 	}
 
 	util.SetConsiderOldYaku(considerOldYaku)
+
+	// 加载自动出牌配置文件
+	if err := LoadAutoPlayerConfig(); err != nil {
+		fmt.Printf("⚠️ 加载自动出牌配置失败: %v，使用默认配置\n", err)
+	}
+
+	// 初始化自动出牌配置
+	if autoPlayerEnabled {
+		config := GetAutoPlayerConfig()
+		config.Enabled = true
+		config.Strategy = autoPlayerConfig
+		SetAutoPlayerConfig(config)
+		
+		color.HiGreen("🚀 自动出牌已启用，策略: %s", autoPlayerConfig)
+	}
 
 	humanTiles := strings.Join(flag.Args(), " ")
 	humanTilesInfo := &model.HumanTilesInfo{
