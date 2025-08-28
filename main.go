@@ -30,7 +30,7 @@ var (
 	
 	// 自动出牌相关参数
 	autoPlayerEnabled bool
-	autoPlayerConfig  string
+	autoPlayerStrategy string
 )
 
 func init() {
@@ -56,7 +56,7 @@ func init() {
 	
 	// 自动出牌参数
 	flag.BoolVar(&autoPlayerEnabled, "auto", false, "启用自动出牌")
-	flag.StringVar(&autoPlayerConfig, "auto-config", "balanced", "自动出牌策略 (aggressive/balanced/defensive)")
+	flag.StringVar(&autoPlayerStrategy, "auto-config", "balanced", "自动出牌策略 (aggressive/balanced/defensive)")
 }
 
 const (
@@ -148,10 +148,10 @@ func main() {
 	if autoPlayerEnabled {
 		config := GetAutoPlayerConfig()
 		config.Enabled = true
-		config.Strategy = autoPlayerConfig
+		config.Strategy = autoPlayerStrategy
 		SetAutoPlayerConfig(config)
 		
-		color.HiGreen("🚀 自动出牌已启用，策略: %s", autoPlayerConfig)
+		color.HiGreen("🚀 自动出牌已启用，策略: %s", autoPlayerStrategy)
 	}
 
 	humanTiles := strings.Join(flag.Args(), " ")

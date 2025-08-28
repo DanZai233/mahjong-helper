@@ -68,7 +68,7 @@ func (ap *AutoPlayer) MakeDecision(playerInfo *model.PlayerInfo, mixedRiskTable 
 
 	// 检查是否已和牌
 	if util.CountOfTiles34(playerInfo.HandTiles34)%3 == 1 {
-		shanten, results14, _ := util.CalculateShantenWithImproves14(playerInfo)
+		shanten, _, _ := util.CalculateShantenWithImproves14(playerInfo)
 		if shanten == -1 {
 			return Decision{Action: "agari", Confidence: 1.0, Reason: "已和牌"}
 		}
@@ -92,14 +92,10 @@ func (ap *AutoPlayer) MakeDecision(playerInfo *model.PlayerInfo, mixedRiskTable 
 
 // 做出切牌决策
 func (ap *AutoPlayer) makeDiscardDecision(playerInfo *model.PlayerInfo, mixedRiskTable riskTable) Decision {
-	shanten, results14, incShantenResults14 := util.CalculateShantenWithImproves14(playerInfo)
+	_, results14, incShantenResults14 := util.CalculateShantenWithImproves14(playerInfo)
 	
 	// 评估危险度
 	dangerLevel := ap.assessDangerLevel(mixedRiskTable, playerInfo)
-	
-	var bestDiscard int
-	var confidence float64
-	var reason string
 	
 	// 根据策略选择决策
 	switch ap.config.Strategy {
@@ -194,7 +190,7 @@ func (ap *AutoPlayer) makeMeldDecision(playerInfo *model.PlayerInfo, targetTile 
 	}
 	
 	// 分析鸣牌效果
-	shanten, results14, _ := util.CalculateMeld(playerInfo, targetTile, false, true)
+	_, results14, _ := util.CalculateMeld(playerInfo, targetTile, false, true)
 	
 	if len(results14) > 0 {
 		best := results14[0]
